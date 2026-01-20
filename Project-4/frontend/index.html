@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Memory Context</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen active">
+            <div class="login-box">
+                <h1>Chat with Memory</h1>
+                <p>Remembers your last 5 messages for context</p>
+                <form onsubmit="handleLogin(event)">
+                    <input 
+                        type="email" 
+                        id="emailInput" 
+                        placeholder="Enter your email" 
+                        required
+                    >
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chatScreen" class="screen">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Threads</h2>
+                    <button onclick="createNewThread()" class="new-thread-btn">+ New</button>
+                </div>
+                <div id="threadsList" class="threads-list"></div>
+                <div class="user-section">
+                    <span id="userDisplay"></span>
+                    <button onclick="logout()" class="logout-btn">Logout</button>
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <div class="header-content">
+                            <h2 id="threadTitle">Select a thread</h2>
+                            <div class="memory-indicator">
+                                <span id="memoryStatus">Memory: 0/5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="messages"></div>
+                    <div class="chat-input-area">
+                        <input 
+                            type="text" 
+                            id="userInput" 
+                            placeholder="Type a message..." 
+                            onkeypress="handleKeyPress(event)"
+                        >
+                        <button onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot with Login & Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="loginScreen" class="screen active">
+            <div class="login-box">
+                <h1>Amzur Chat Login</h1>
+                <form onsubmit="handleLogin(event)">
+                    <input 
+                        type="email" 
+                        id="emailInput" 
+                        placeholder="Enter your Amzur email" 
+                        required
+                    >
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="chatScreen" class="screen">
+            <div class="chat-window">
+                <div class="chat-header">
+                    <h2>Amzur Chat</h2>
+                    <span id="userName"></span>
+                    <button onclick="logout()" class="logout-btn">Logout</button>
+                </div>
+                <div class="chat-history" id="chatHistory"></div>
+                <div class="chat-messages" id="messages"></div>
+                <div class="chat-input-area">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Type your message..." 
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
