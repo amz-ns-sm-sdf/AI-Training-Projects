@@ -1,0 +1,18 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI'; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.container { max-width: 800px; width: 100%; }
+.content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+h1 { text-align: center; color: #333; margin-bottom: 30px; }
+.services { display: grid; gap: 15px; margin-bottom: 30px; }
+.service-card { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea; cursor: pointer; transition: all 0.3s; }
+.service-card:hover { background: #667eea; color: white; }
+.service-name { font-weight: bold; margin-bottom: 5px; }
+.service-desc { font-size: 12px; color: #666; }
+.service-card:hover .service-desc { color: rgba(255,255,255,0.8); }
+.interaction { display: flex; gap: 10px; margin-bottom: 20px; }
+#payload { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; }
+button { padding: 12px 25px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+button:hover { background: #5568d3; }
+.response { background: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; display: none; }
+.response.show { display: block; }
+pre { background: #1e1e1e; color: #2a9eff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }

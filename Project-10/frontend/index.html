@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Rules Validator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h2>📋 Rule Sets</h2>
+                <div id="ruleSets" class="rule-sets"></div>
+                
+                <h3>🖼️ Sample Images</h3>
+                <div id="sampleImages" class="sample-images"></div>
+            </div>
+            
+            <!-- Main area -->
+            <div class="main-content">
+                <div class="header">🔍 Image Rules Validator</div>
+                
+                <div class="image-section">
+                    <img id="previewImage" src="" alt="Preview" class="preview-image">
+                </div>
+                
+                <div class="rules-section">
+                    <h3>Current Rules:</h3>
+                    <div id="rulesList" class="rules-list"></div>
+                </div>
+                
+                <div class="validation-section">
+                    <div id="validationResult" class="validation-result"></div>
+                </div>
+                
+                <div class="input-section">
+                    <input type="text" id="imageUrl" placeholder="Enter image URL or select sample">
+                    <button onclick="validateImage()">Validate Image</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

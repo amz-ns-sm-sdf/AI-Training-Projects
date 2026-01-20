@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Langchain Agent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="main-layout">
+            <!-- Agent Info Sidebar -->
+            <div class="sidebar">
+                <h2>🤖 Agent Info</h2>
+                <div id="agentInfo" class="agent-info"></div>
+                
+                <h3>📚 Available Tools</h3>
+                <div id="toolsList" class="tools-list"></div>
+                
+                <h3>💾 Memory</h3>
+                <div id="memoryInfo" class="memory-info"></div>
+            </div>
+            
+            <!-- Chat Area -->
+            <div class="chat-window">
+                <div class="chat-header">🧠 Langchain Agent Demo</div>
+                <div class="chat-messages" id="messages"></div>
+                <div class="input-section">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Ask the agent something..." 
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button onclick="queryAgent()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

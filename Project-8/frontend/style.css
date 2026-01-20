@@ -1,0 +1,251 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    height: 100vh;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+}
+
+.main-layout {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 300px;
+    background: #1a1a1a;
+    color: white;
+    padding: 20px;
+    overflow-y: auto;
+    border-right: 2px solid #2a5298;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+}
+
+.sidebar h2 {
+    margin-bottom: 15px;
+    color: #2a9eff;
+    font-size: 18px;
+}
+
+.sidebar h3 {
+    margin-bottom: 10px;
+    color: #2a9eff;
+    font-size: 14px;
+}
+
+.schema-info {
+    background: #222;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.schema-info .table-name {
+    color: #2a9eff;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.schema-info .column {
+    color: #95a5a6;
+    margin-left: 10px;
+    padding: 3px 0;
+}
+
+.sample-queries {
+    margin-top: 15px;
+}
+
+.sample-query {
+    background: #2a2a2a;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    border-left: 3px solid #2a5298;
+    transition: all 0.3s;
+    font-size: 12px;
+}
+
+.sample-query:hover {
+    background: #333;
+    border-left-color: #2a9eff;
+    padding-left: 15px;
+}
+
+.sample-query .query-text {
+    color: #2a9eff;
+    font-weight: bold;
+}
+
+.sample-query .query-desc {
+    color: #95a5a6;
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.chat-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    max-width: 85%;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-message {
+    background: #2a5298;
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.bot-message {
+    background: #f0f0f0;
+    color: #333;
+    margin-right: auto;
+    border-left: 4px solid #2a5298;
+}
+
+.query-result {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.sql-display {
+    background: #1e1e1e;
+    color: #2a9eff;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    margin-bottom: 10px;
+    border-left: 3px solid #2a5298;
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.result-table th {
+    background: #2a5298;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.result-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.result-table tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.row-count {
+    color: #666;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.chat-input-area {
+    display: flex;
+    padding: 15px 20px;
+    border-top: 2px solid #ddd;
+    gap: 10px;
+    background: #fafafa;
+}
+
+#userInput {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border 0.3s;
+}
+
+#userInput:focus {
+    outline: none;
+    border-color: #2a5298;
+    box-shadow: 0 0 5px rgba(42, 82, 152, 0.3);
+}
+
+.chat-input-area button {
+    padding: 12px 25px;
+    background: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.chat-input-area button:hover {
+    background: #1e3c72;
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        max-height: 30%;
+        border-right: none;
+        border-bottom: 2px solid #2a5298;
+    }
+}

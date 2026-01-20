@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Q&A</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13/dist/markdown-it.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h2>🔍 DB Schema</h2>
+                <div id="schemaInfo" class="schema-info"></div>
+                
+                <h3 style="margin-top: 20px;">📝 Sample Queries</h3>
+                <div id="sampleQueries" class="sample-queries"></div>
+            </div>
+            
+            <!-- Chat window -->
+            <div class="chat-window">
+                <div class="chat-header">💾 Natural Language Database Q&A</div>
+                <div class="chat-messages" id="messages"></div>
+                <div class="chat-input-area">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Ask about the database (e.g., 'Show all customers')" 
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button onclick="sendQuery()">Query</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

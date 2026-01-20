@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel/Sheet Q&A</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h2>📊 Sheets</h2>
+                <div id="sheetsList" class="sheets-list"></div>
+                
+                <h3>📝 Sample Queries</h3>
+                <div id="sampleQueries" class="sample-queries"></div>
+            </div>
+            
+            <!-- Main area -->
+            <div class="chat-window">
+                <div class="chat-header">📈 Excel/Google Sheets Q&A</div>
+                <div id="sheetPreview" class="sheet-preview"></div>
+                <div class="chat-messages" id="messages"></div>
+                <div class="chat-input-area">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Ask about the spreadsheet..." 
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button onclick="sendQuery()">Query</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
