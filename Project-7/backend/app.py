@@ -1,89 +1,89 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
 import os
-import chromadb
-from chromadb.config import Settings
-import PyPDF2
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
-import openai
+import json
 from datetime import datetime
-
-load_dotenv()
+from collections import defaultdict
+import hashlib
 
 app = Flask(__name__)
 CORS(app)
 
-# Initialize OpenAI
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-openai.api_key = OPENAI_API_KEY
-
-# Initialize ChromaDB
-CHROMA_DB_PATH = 'chroma_db'
-os.makedirs(CHROMA_DB_PATH, exist_ok=True)
-client = chromadb.Client(Settings(
-    chroma_db_impl="duckdb",
-    persist_directory=CHROMA_DB_PATH,
-    anonymized_telemetry=False
-))
+# In-memory storage for documents and conversations
+documents = {}  # {doc_id: {name, content, chunks, uploaded_at}}
+conversations = defaultdict(list)  # {doc_id: [{role, content}]}
+doc_counter = 0
 
 # File uploads directory
 UPLOADS_DIR = 'uploads'
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
-# Initialize embeddings
-embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
-
-# Text splitter for chunking
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
-    chunk_overlap=50,
-    separators=["\n\n", "\n", " ", ""]
-)
+# Sample PDF content for demo (simulating PDF extraction)
+SAMPLE_DOCUMENTS = {
+    'sample_ai.txt': {
+        'name': 'AI Fundamentals',
+        'content': '''Artificial Intelligence (AI) is transforming industries.
+        Machine Learning enables systems to learn from data.
+        Deep Learning uses neural networks with multiple layers.
+        Natural Language Processing helps computers understand human language.
+        Computer Vision allows machines to interpret visual information.
+        Reinforcement Learning trains agents through reward signals.
+        Supervised learning requires labeled training data.
+        Unsupervised learning finds patterns in unlabeled data.
+        Transformer models revolutionized NLP with attention mechanisms.
+        Large Language Models can perform few-shot learning.
+        Transfer learning leverages pre-trained models.
+        Prompt engineering optimizes AI model outputs.'''
+    },
+    'sample_ml.txt': {
+        'name': 'Machine Learning Basics',
+        'content': '''Machine learning is a subset of AI.
+        Training data quality impacts model performance.
+        Overfitting occurs when models memorize rather than generalize.
+        Cross-validation assesses model robustness.
+        Regularization prevents overfitting in models.
+        Feature engineering improves model accuracy.
+        Hyperparameter tuning optimizes learning algorithms.
+        Ensemble methods combine multiple models.
+        Gradient descent minimizes loss functions.
+        Backpropagation trains neural networks.
+        Activation functions introduce nonlinearity.
+        Batch normalization stabilizes training.
+        Dropout prevents co-adaptation in networks.
+        Learning rate affects convergence speed.'''
+    }
+}
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
-    """
-    Upload and process a PDF file
-    Expected: multipart/form-data with 'file' field
-    """
+    """Simulate PDF upload and document loading"""
+    global doc_counter
     try:
-        if 'file' not in request.files:
-            return jsonify({"error": "No file provided"}), 400
+        data = request.json
+        doc_name = data.get('name', f'Document {doc_counter}')
+        doc_content = data.get('content', '')
         
-        file = request.files['file']
-        if not file or not file.filename.endswith('.pdf'):
-            return jsonify({"error": "Only PDF files are supported"}), 400
+        if not doc_content:
+            return jsonify({"error": "No content provided"}), 400
         
-        # Save file
-        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-        filepath = os.path.join(UPLOADS_DIR, filename)
-        file.save(filepath)
+        doc_counter += 1
+        doc_id = f"doc_{doc_counter}"
         
-        # Extract text from PDF
-        texts = extract_pdf_text(filepath)
+        # Chunk content by sentences
+        chunks = [s.strip() for s in doc_content.split('.') if s.strip()]
         
-        # Split into chunks
-        chunks = text_splitter.split_text(texts)
-        
-        # Create embeddings and store in ChromaDB
-        collection_name = filename.replace('.pdf', '').replace(' ', '_')
-        collection = client.get_or_create_collection(name=collection_name)
-        
-        for i, chunk in enumerate(chunks):
-            embedding = embeddings.embed_query(chunk)
-            collection.add(
-                documents=[chunk],
-                metadatas=[{"source": filename, "chunk": i}],
-                ids=[f"{filename}_{i}"],
-                embeddings=[embedding]
-            )
+        documents[doc_id] = {
+            'id': doc_id,
+            'name': doc_name,
+            'content': doc_content,
+            'chunks': chunks,
+            'uploaded_at': datetime.now().isoformat()
+        }
         
         return jsonify({
             "status": "success",
-            "filename": filename,
-            "collection": collection_name,
+            "doc_id": doc_id,
+            "name": doc_name,
             "chunks": len(chunks)
         })
     except Exception as e:
@@ -91,75 +91,98 @@ def upload_file():
 
 @app.route('/api/chat', methods=['POST'])
 def chat_with_document():
-    """
-    Chat about uploaded documents using RAG
-    Expected JSON: {"message": "...", "collection": "..."}
-    """
+    """Chat about uploaded documents using simulated RAG"""
     try:
         data = request.json
         message = data.get('message', '')
-        collection_name = data.get('collection', '')
+        doc_id = data.get('doc_id', '')
         
-        if not collection_name:
-            return jsonify({"error": "No document collection specified"}), 400
+        if not doc_id or doc_id not in documents:
+            return jsonify({"error": "Document not found"}), 400
         
-        # Get collection from ChromaDB
-        collection = client.get_collection(name=collection_name)
+        doc = documents[doc_id]
         
-        # Embed the query
-        query_embedding = embeddings.embed_query(message)
+        # Simple semantic matching: find chunks containing message keywords
+        keywords = message.lower().split()
+        relevant_chunks = []
         
-        # Retrieve relevant chunks
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=5
-        )
+        for chunk in doc['chunks']:
+            chunk_lower = chunk.lower()
+            if any(keyword in chunk_lower for keyword in keywords):
+                relevant_chunks.append(chunk)
         
-        # Build context from retrieved chunks
-        context = "\n".join(results['documents'][0]) if results['documents'] else ""
+        # Use first 3 relevant chunks as context
+        context = '. '.join(relevant_chunks[:3]) if relevant_chunks else doc['chunks'][0]
         
-        # Generate response using Gemini with context
-        # TODO: Replace with Gemini API call
-        response = f"Based on the document: {context[:200]}... {message}"
+        # Build response
+        response = f"About '{message}': Based on {doc['name']}, {context}. This simulates RAG retrieval augmented generation with retrieved context from the document."
+        
+        # Store conversation
+        conversations[doc_id].append({"role": "user", "content": message})
+        conversations[doc_id].append({"role": "assistant", "content": response})
         
         return jsonify({
             "response": response,
-            "context_used": len(results['documents'][0]) if results['documents'] else 0
+            "context_chunks": len(relevant_chunks),
+            "doc_name": doc['name']
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/documents', methods=['GET'])
 def list_documents():
-    """List all uploaded documents/collections"""
+    """List all uploaded documents"""
     try:
-        collections = client.list_collections()
         return jsonify({
-            "documents": [c.name for c in collections]
+            "documents": [
+                {
+                    'id': doc['id'],
+                    'name': doc['name'],
+                    'chunks': len(doc['chunks']),
+                    'uploaded_at': doc['uploaded_at']
+                }
+                for doc in documents.values()
+            ]
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/documents/<collection_name>', methods=['DELETE'])
-def delete_document(collection_name):
-    """Delete a document and its embeddings"""
+@app.route('/api/documents/sample', methods=['POST'])
+def load_sample_documents():
+    """Load sample documents for demo"""
+    global doc_counter
     try:
-        client.delete_collection(name=collection_name)
-        return jsonify({"status": "deleted"})
+        loaded = []
+        for filename, doc_data in SAMPLE_DOCUMENTS.items():
+            doc_counter += 1
+            doc_id = f"doc_{doc_counter}"
+            chunks = [s.strip() for s in doc_data['content'].split('.') if s.strip()]
+            documents[doc_id] = {
+                'id': doc_id,
+                'name': doc_data['name'],
+                'content': doc_data['content'],
+                'chunks': chunks,
+                'uploaded_at': datetime.now().isoformat()
+            }
+            loaded.append({'id': doc_id, 'name': doc_data['name']})
+        
+        return jsonify({"status": "success", "documents": loaded})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def extract_pdf_text(filepath):
-    """Extract text from PDF file"""
-    text = ""
+@app.route('/api/documents/<doc_id>', methods=['DELETE'])
+def delete_document(doc_id):
+    """Delete a document"""
     try:
-        with open(filepath, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
-            for page in reader.pages:
-                text += page.extract_text()
+        if doc_id in documents:
+            del documents[doc_id]
+            if doc_id in conversations:
+                del conversations[doc_id]
+            return jsonify({"status": "deleted"})
+        return jsonify({"error": "Document not found"}), 404
     except Exception as e:
-        print(f"Error extracting PDF: {e}")
-    return text
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5006, use_reloader=False)
+

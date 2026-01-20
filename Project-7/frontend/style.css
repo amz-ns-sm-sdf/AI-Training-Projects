@@ -5,8 +5,8 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     height: 100vh;
 }
 
@@ -21,46 +21,58 @@ body {
 }
 
 .sidebar {
-    width: 250px;
+    width: 280px;
     background: #2c3e50;
     color: white;
     padding: 20px;
-    border-right: 1px solid #34495e;
+    border-right: 2px solid #667eea;
     overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
 }
 
 .sidebar h2 {
-    margin-bottom: 15px;
-    font-size: 18px;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: #667eea;
 }
 
-.upload-section {
+.button-group {
+    display: flex;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
-.upload-section input[type="file"] {
-    display: block;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.upload-section button {
-    width: 100%;
+.btn-primary, .btn-secondary {
+    flex: 1;
     padding: 10px;
-    background: #3498db;
-    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 12px;
+    transition: all 0.3s;
 }
 
-.upload-section button:hover {
-    background: #2980b9;
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-secondary {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #c0392b;
 }
 
 .document-list {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .document-item {
@@ -69,17 +81,28 @@ body {
     margin-bottom: 10px;
     border-radius: 5px;
     cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
 }
 
 .document-item:hover {
     background: #3d5566;
+    border-left-color: #667eea;
 }
 
 .document-item.active {
-    background: #3498db;
+    background: #667eea;
+    border-left-color: #fff;
+}
+
+.document-item .doc-name {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.document-item .doc-info {
+    font-size: 12px;
+    color: #95a5a6;
 }
 
 .delete-btn {
@@ -90,6 +113,8 @@ body {
     border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
+    margin-top: 8px;
+    width: 100%;
 }
 
 .delete-btn:hover {
@@ -100,16 +125,25 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: white;
+    background: #fff;
 }
 
 .chat-header {
     padding: 20px;
-    background: #4a90e2;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     text-align: center;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.selected-doc {
+    padding: 15px 20px;
+    background: #f0f0f0;
+    color: #666;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
 }
 
 .chat-messages {
@@ -120,13 +154,27 @@ body {
 
 .message {
     margin-bottom: 15px;
-    padding: 12px;
+    padding: 12px 15px;
     border-radius: 8px;
     max-width: 85%;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .user-message {
-    background: #e3f2fd;
+    background: #667eea;
+    color: white;
     margin-left: auto;
     text-align: right;
 }
@@ -134,35 +182,45 @@ body {
 .bot-message {
     background: #f5f5f5;
     margin-right: auto;
+    border-left: 4px solid #667eea;
 }
 
 .chat-input-area {
     display: flex;
-    padding: 15px;
-    border-top: 1px solid #ddd;
+    padding: 15px 20px;
+    border-top: 2px solid #ddd;
     gap: 10px;
+    background: #fafafa;
 }
 
 #userInput {
     flex: 1;
-    padding: 10px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 14px;
+    transition: border 0.3s;
 }
 
-button {
-    padding: 10px 20px;
-    background: #4a90e2;
+#userInput:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+}
+
+.chat-input-area button {
+    padding: 12px 25px;
+    background: #667eea;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
+    transition: all 0.3s;
 }
 
-button:hover {
-    background: #357abd;
+.chat-input-area button:hover {
+    background: #5568d3;
 }
 
 @media (max-width: 768px) {
@@ -172,8 +230,9 @@ button:hover {
     
     .sidebar {
         width: 100%;
-        max-height: 150px;
+        max-height: 30%;
         border-right: none;
-        border-bottom: 1px solid #34495e;
+        border-bottom: 2px solid #667eea;
     }
 }
+

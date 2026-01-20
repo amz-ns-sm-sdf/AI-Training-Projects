@@ -1,34 +1,22 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5006/api';
+const md = window.markdownit();
 let selectedDocument = null;
+let documents = [];
 
-async function uploadFile() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    
-    if (!file || !file.name.endsWith('.pdf')) {
-        alert('Please select a PDF file');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
+async function loadSampleDocuments() {
     try {
-        const response = await fetch(`${API_URL}/upload`, {
-            method: 'POST',
-            body: formData
+        const response = await fetch(`${API_URL}/documents/sample`, {
+            method: 'POST'
         });
         
         const data = await response.json();
         if (response.ok) {
-            alert(`File uploaded successfully! ${data.chunks} chunks created.`);
-            fileInput.value = '';
-            loadDocuments();
+            await loadDocuments();
         } else {
-            alert('Error uploading file: ' + data.error);
+            alert('Error loading samples: ' + data.error);
         }
     } catch (error) {
-        alert('Error uploading file: ' + error);
+        alert('Error: ' + error);
         console.error('Error:', error);
     }
 }
@@ -38,56 +26,80 @@ async function loadDocuments() {
         const response = await fetch(`${API_URL}/documents`);
         const data = await response.json();
         
+        documents = data.documents || [];
         const docList = document.getElementById('documentList');
         docList.innerHTML = '';
         
-        if (data.documents && data.documents.length > 0) {
-            data.documents.forEach(doc => {
+        if (documents && documents.length > 0) {
+            documents.forEach(doc => {
                 const div = document.createElement('div');
                 div.className = 'document-item';
-                if (doc === selectedDocument) {
+                if (doc.id === selectedDocument) {
                     div.classList.add('active');
                 }
                 
                 div.innerHTML = `
-                    <span onclick="selectDocument('${doc}')" style="flex: 1; cursor: pointer;">${doc}</span>
-                    <button class="delete-btn" onclick="deleteDocument('${doc}')">Delete</button>
+                    <div>
+                        <div class="doc-name" onclick="selectDocument('${doc.id}')" style="cursor: pointer;">${doc.name}</div>
+                        <div class="doc-info">${doc.chunks} chunks</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteDocument('${doc.id}')">Delete</button>
                 `;
                 docList.appendChild(div);
             });
         } else {
-            docList.innerHTML = '<p style="color: #95a5a6; font-size: 12px;">No documents uploaded yet</p>';
+            docList.innerHTML = '<p style="color: #95a5a6; font-size: 12px; text-align: center; padding: 20px;">No documents loaded</p>';
         }
+        
+        updateSelectedDocDisplay();
     } catch (error) {
         console.error('Error loading documents:', error);
     }
 }
 
-function selectDocument(docName) {
-    selectedDocument = docName;
+function selectDocument(docId) {
+    selectedDocument = docId;
     loadDocuments();
+    clearMessages();
 }
 
-async function deleteDocument(docName) {
-    if (!confirm(`Delete document "${docName}"?`)) return;
+function updateSelectedDocDisplay() {
+    const docDiv = document.getElementById('selectedDoc');
+    if (selectedDocument) {
+        const doc = documents.find(d => d.id === selectedDocument);
+        docDiv.textContent = `📖 ${doc ? doc.name : 'Unknown'}`;
+    } else {
+        docDiv.textContent = 'Select a document to start';
+    }
+}
+
+async function deleteDocument(docId) {
+    if (!confirm('Delete this document?')) return;
     
     try {
-        const response = await fetch(`${API_URL}/documents/${docName}`, {
+        const response = await fetch(`${API_URL}/documents/${docId}`, {
             method: 'DELETE'
         });
         
         if (response.ok) {
-            selectedDocument = null;
-            loadDocuments();
+            if (selectedDocument === docId) {
+                selectedDocument = null;
+            }
+            await loadDocuments();
         }
     } catch (error) {
         console.error('Error deleting document:', error);
     }
 }
 
+function clearAllDocs() {
+    if (!confirm('Delete ALL documents?')) return;
+    documents.forEach(doc => deleteDocument(doc.id));
+}
+
 async function sendMessage() {
     if (!selectedDocument) {
-        alert('Please upload and select a document first');
+        alert('Please load and select a document first');
         return;
     }
     
@@ -105,12 +117,16 @@ async function sendMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: message,
-                collection: selectedDocument
+                doc_id: selectedDocument
             })
         });
         
         const data = await response.json();
-        displayMessage(data.response || data.error, 'bot');
+        if (response.ok) {
+            displayMessage(data.response, 'bot');
+        } else {
+            displayMessage('Error: ' + data.error, 'bot');
+        }
     } catch (error) {
         displayMessage('Error connecting to server', 'bot');
         console.error('Error:', error);
@@ -121,16 +137,28 @@ function displayMessage(text, sender) {
     const messagesDiv = document.getElementById('messages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
-    messageDiv.textContent = text;
+    
+    if (sender === 'bot') {
+        messageDiv.innerHTML = md.render(text);
+    } else {
+        messageDiv.textContent = text;
+    }
+    
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
+function clearMessages() {
+    document.getElementById('messages').innerHTML = '';
+}
+
 function handleKeyPress(event) {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
         sendMessage();
     }
 }
 
 // Load documents on page load
 window.addEventListener('load', loadDocuments);
+

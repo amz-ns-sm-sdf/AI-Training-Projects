@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5004/api';
+const API_URL = 'http://localhost:5005/api';
 let currentUserId = null;
 let currentUserName = null;
 let currentThreadId = null;
@@ -8,17 +8,7 @@ let userThreads = [];
 const md = window.markdownit({
     html: true,
     linkify: true,
-    typographer: true,
-    highlight: function (str, lang) {
-        if (lang && window.hljs.getLanguage(lang)) {
-            try {
-                return '<pre class="hljs"><code>' +
-                    window.hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-                    '</code></pre>';
-            } catch (__) {}
-        }
-        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
-    }
+    typographer: true
 });
 
 async function handleLogin(event) {
@@ -112,7 +102,11 @@ async function loadThreadMessages() {
         
         data.messages.forEach(msg => {
             displayMessage(msg.message, 'user');
-            displayMessage(msg.response, 'bot');
+            if (msg.image_url) {
+                displayImageMessage(msg.response, msg.image_url);
+            } else {
+                displayMessage(msg.response, 'bot');
+            }
         });
     } catch (error) {
         console.error('Error loading messages:', error);
@@ -145,7 +139,12 @@ async function sendMessage() {
         });
         
         const data = await response.json();
-        displayMessage(data.response || data.error, 'bot');
+        
+        if (data.type === 'image') {
+            displayImageMessage(data.response, data.image_url);
+        } else {
+            displayMessage(data.response || data.error, 'bot');
+        }
     } catch (error) {
         displayMessage('Error connecting to server', 'bot');
         console.error('Error:', error);
@@ -160,22 +159,32 @@ function displayMessage(text, sender) {
     if (sender === 'bot') {
         // Render markdown for bot messages
         messageDiv.innerHTML = md.render(text);
-        
-        // Trigger syntax highlighting for code blocks
-        messagesDiv.appendChild(messageDiv);
-        messageDiv.querySelectorAll('pre code').forEach(block => {
-            window.hljs.highlightElement(block);
-        });
-        
-        // Trigger MathJax to render formulas
-        if (window.MathJax) {
-            MathJax.typesetPromise([messageDiv]).catch(err => console.log(err));
-        }
     } else {
         messageDiv.textContent = text;
-        messagesDiv.appendChild(messageDiv);
     }
     
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function displayImageMessage(text, imageUrl) {
+    const messagesDiv = document.getElementById('messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message image-message';
+    
+    // Render markdown for text content
+    messageDiv.innerHTML = md.render(text);
+    
+    // Ensure image is displayed
+    const images = messageDiv.querySelectorAll('img');
+    images.forEach(img => {
+        img.style.maxWidth = '100%';
+        img.style.borderRadius = '8px';
+        img.style.marginTop = '15px';
+        img.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+    });
+    
+    messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 

@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rich Media Chat</title>
+    <title>Image Generation Chat</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Highlight.js for code syntax highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
-    <!-- MathJax for LaTeX formulas -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Markdown for rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13/dist/markdown-it.min.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- Login Screen -->
         <div id="loginScreen" class="screen active">
             <div class="login-box">
-                <h1>🎨 Rich Media Chat</h1>
-                <p>Images • Videos • Tables • Formulas • Code</p>
+                <h1>🎨 Image Generation Chat</h1>
+                <p>Generate images with Gemini 2.0</p>
                 <form onsubmit="handleLogin(event)">
                     <input 
                         type="email" 
@@ -48,13 +45,14 @@
                 <div class="chat-window">
                     <div class="chat-header">
                         <h2 id="threadTitle">Select a thread</h2>
+                        <p class="hint">💡 Try: "Generate image of sunset" or "Generate image of mountain"</p>
                     </div>
                     <div class="chat-messages" id="messages"></div>
                     <div class="chat-input-area">
                         <input 
                             type="text" 
                             id="userInput" 
-                            placeholder="Try: image, video, table, formula, code..." 
+                            placeholder="Describe the image you want to generate..." 
                             onkeypress="handleKeyPress(event)"
                         >
                         <button onclick="sendMessage()">Send</button>
@@ -63,8 +61,6 @@
             </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13/dist/markdown-it.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

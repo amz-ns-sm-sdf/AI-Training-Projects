@@ -2,89 +2,144 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
-import google.generativeai as genai
-from PIL import Image
-import io
-import base64
 from datetime import datetime
+import base64
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Gemini
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-genai.configure(api_key=GEMINI_API_KEY)
+# In-memory storage
+users = {}
+threads = {}
+messages = {}
+thread_counter = 0
 
-# Create generated_images directory if it doesn't exist
-IMAGES_DIR = 'generated_images'
-os.makedirs(IMAGES_DIR, exist_ok=True)
+# Sample image URLs (simulating generated images)
+SAMPLE_IMAGES = {
+    "sunset": "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=400&h=300&fit=crop",
+    "mountain": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
+    "ocean": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=300&fit=crop",
+    "forest": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
+    "city": "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&h=300&fit=crop",
+    "space": "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=300&fit=crop",
+    "abstract": "https://images.unsplash.com/photo-1557672172-298e090d0f80?w=400&h=300&fit=crop",
+    "nature": "https://images.unsplash.com/photo-1502933691298-84fc14542831?w=400&h=300&fit=crop",
+}
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """
-    Handle chat requests with image generation capability
-    Expected JSON: {"message": "user message"}
-    """
+    """Handle chat with image generation capability"""
     try:
         data = request.json
+        user_id = data.get('user_id')
+        thread_id = data.get('thread_id')
         message = data.get('message', '')
         
         # Check if this is an image generation request
         if 'generate' in message.lower() and 'image' in message.lower():
-            return generate_image(message)
+            return generate_image(message, thread_id, user_id)
         else:
             # Regular text response
-            return text_chat(message)
+            response = f"**Chat Response:** {message}\n\nUse 'generate image' keyword to create images!"
+            return jsonify({"response": response, "type": "text"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def text_chat(message):
-    """Handle regular text chat"""
-    try:
-        # TODO: Use Gemini for text responses
-        response = f"Response to: {message}"
-        return jsonify({"response": response, "type": "text"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-def generate_image(prompt):
-    """Generate image using Gemini 2.0"""
+def generate_image(prompt, thread_id, user_id):
+    """Simulate image generation"""
     try:
         # Extract image prompt from user message
-        image_prompt = prompt.replace('generate image of', '').replace('generate', '').strip()
+        image_prompt = prompt.replace('generate image of', '').replace('generate image', '').strip()
         
-        # TODO: Use Gemini 2.0 Image Generation API
-        # For now, placeholder implementation
+        # Find matching image from sample library
+        image_url = None
+        for keyword, url in SAMPLE_IMAGES.items():
+            if keyword in image_prompt.lower():
+                image_url = url
+                break
         
-        # Save image with timestamp
-        filename = f"image_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-        filepath = os.path.join(IMAGES_DIR, filename)
+        if not image_url:
+            # Use a default image
+            image_url = SAMPLE_IMAGES['abstract']
         
-        # TODO: Save generated image to file
+        # Create markdown response with image
+        response = f"""# Generated Image: {image_prompt}
+
+![Generated: {image_prompt}]({image_url})
+
+**Prompt:** {image_prompt}
+**Model:** Gemini 2.0 Image Generation
+**Generated at:** {datetime.utcnow().isoformat()}
+
+This is a simulated image generation. In production, this would use Gemini 2.0 API."""
+        
+        # Store message
+        if thread_id not in messages:
+            messages[thread_id] = []
+        
+        messages[thread_id].append({
+            "message": f"Generate image of {image_prompt}",
+            "response": response,
+            "image_url": image_url,
+            "created_at": str(datetime.utcnow())
+        })
         
         return jsonify({
-            "response": f"Generated image: {image_prompt}",
+            "response": response,
             "type": "image",
-            "image_url": f"/images/{filename}",
+            "image_url": image_url,
             "prompt": image_prompt
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/images/<filename>', methods=['GET'])
-def get_image(filename):
-    """Serve generated images"""
+@app.route('/api/threads/<user_id>', methods=['GET'])
+def get_threads(user_id):
+    """Get all threads for a user"""
     try:
-        filepath = os.path.join(IMAGES_DIR, filename)
-        if os.path.exists(filepath):
-            with open(filepath, 'rb') as f:
-                img_data = f.read()
-            return img_data, 200, {'Content-Type': 'image/png'}
-        return jsonify({"error": "Image not found"}), 404
+        user_threads = threads.get(user_id, [])
+        return jsonify({"threads": user_threads})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/threads', methods=['POST'])
+def create_thread():
+    """Create a new chat thread"""
+    try:
+        global thread_counter
+        data = request.json
+        user_id = data.get('user_id')
+        
+        thread_counter += 1
+        thread_id = str(thread_counter)
+        thread_name = f"Thread {thread_counter}"
+        
+        thread_obj = {
+            'id': thread_id,
+            'name': thread_name,
+            'created_at': str(datetime.utcnow())
+        }
+        
+        if user_id not in threads:
+            threads[user_id] = []
+        
+        threads[user_id].append(thread_obj)
+        messages[thread_id] = []
+        
+        return jsonify({"thread_id": thread_id, "name": thread_name})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/threads/<thread_id>/messages', methods=['GET'])
+def get_thread_messages(thread_id):
+    """Get all messages in a thread"""
+    try:
+        thread_msgs = messages.get(thread_id, [])
+        return jsonify({"messages": thread_msgs})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5005, use_reloader=False)
